@@ -1,10 +1,17 @@
 Rails.application.routes.draw do
-  devise_for :users
   scope :api, defaults: { format: :json } do
-    devise_for :users, controllers: {
-      registrations: 'registrations'
-    }, skip: [:sessions, :password]
-    resources :tweets
-  end
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+    devise_for :users, controllers: { sessions: :sessions },
+                       path_names: { sign_in: :login }
+
+
+    resource :user, only: [:show, :update]
+
+    resources :profiles, param: :username, only: [:show] do
+      resource :follow, only: [:create, :destroy]
+    end
+
+    resources :tweets, param: :slug, except: [:edit, :new] do
+      get :feed, on: :collection
+    end
+  end  
 end
